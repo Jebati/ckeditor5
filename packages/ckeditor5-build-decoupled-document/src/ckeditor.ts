@@ -27,6 +27,62 @@ import { PasteFromOffice } from '@ckeditor/ckeditor5-paste-from-office';
 import { Table, TableToolbar } from '@ckeditor/ckeditor5-table';
 import { TextTransformation } from '@ckeditor/ckeditor5-typing';
 import { CloudServices } from '@ckeditor/ckeditor5-cloud-services';
+import PageBreak from '@ckeditor/ckeditor5-page-break/src/pagebreak';
+
+import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
+import { ButtonView } from '@ckeditor/ckeditor5-ui';
+
+import imageIcon from '@ckeditor/ckeditor5-core/theme/icons/image.svg';
+import linkToPageIcon from './icons/link-to-page.svg';
+
+declare let WIKI: any;
+
+/* global WIKI */
+
+class LinkToPage extends Plugin {
+	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+	public init(): void {
+		const editor = this.editor;
+
+		editor.ui.componentFactory.add( 'linkToPage', locale => {
+			const view = new ButtonView( locale );
+
+			view.set( {
+				label: 'Insert Link to Page',
+				icon: linkToPageIcon,
+				tooltip: true
+			} );
+
+			view.on( 'execute', () => {
+				WIKI.$emit( 'editorLinkToPage' );
+			} );
+
+			return view;
+		} );
+	}
+}
+
+class InsertAsset extends Plugin {
+	public init(): void {
+		const editor = this.editor;
+
+		editor.ui.componentFactory.add( 'insertAsset', locale => {
+			const view = new ButtonView( locale );
+
+			view.set( {
+				label: 'Insert Assets',
+				icon: imageIcon,
+				tooltip: true
+			} );
+
+			view.on( 'execute', () => {
+				WIKI.$store.set( 'editor/activeModal', 'editorModalMedia' );
+			} );
+
+			return view;
+		} );
+	}
+}
 
 export default class DecoupledEditor extends DecoupledEditorBase {
 	public static override builtinPlugins = [
@@ -65,7 +121,10 @@ export default class DecoupledEditor extends DecoupledEditorBase {
 		PictureEditing,
 		Table,
 		TableToolbar,
-		TextTransformation
+		TextTransformation,
+		LinkToPage,
+		InsertAsset,
+		PageBreak
 	];
 
 	public static override defaultConfig = {
@@ -75,9 +134,10 @@ export default class DecoupledEditor extends DecoupledEditorBase {
 				'|', 'heading',
 				'|', 'fontfamily', 'fontsize', 'fontColor', 'fontBackgroundColor',
 				'|', 'bold', 'italic', 'underline', 'strikethrough',
-				'|', 'link', 'uploadImage', 'insertTable', 'blockQuote', 'mediaEmbed',
+				'|', 'linkToPage', 'link', 'insertAsset', 'insertTable', 'blockQuote', 'mediaEmbed',
 				'|', 'alignment',
-				'|', 'bulletedList', 'numberedList', 'outdent', 'indent'
+				'|', 'bulletedList', 'numberedList', 'outdent', 'indent',
+				'|', 'pageBreak'
 			]
 		},
 		image: {
